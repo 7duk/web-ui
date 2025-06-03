@@ -38,7 +38,11 @@ export default function ChatPage() {
   }, [reply]);
 
   useEffect(() => {
-    sendMessageMutation.mutate({ message: client.userText });
+    console.log(
+      "📥 Message in ChatPage:",
+      client.userText + " at: " + new Date().toISOString()
+    );
+    // sendMessageMutation.mutate({ message: client.userText });
   }, [client.userText]);
 
   // Mutation upload file
@@ -103,7 +107,7 @@ export default function ChatPage() {
     <>
       <ChatBubble
         chatHistory="Show"
-        chatUiVariant="Sequential Line Chat"
+        chatUiVariant="Unified Compact Chat"
         client={client}
       />
       <div className="flex flex-row w-full gap-2">
