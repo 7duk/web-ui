@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
 import { v4 as uuidv4 } from "uuid";
 import useRegisterWebSocket from "./websocket/websocket";
+import { sendMessage } from "./api/MessageApi";
 
 export default function ChatPage() {
   const location = useLocation();
@@ -23,10 +24,22 @@ export default function ChatPage() {
     avatar
   );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [message, setMessage] = useState<string>(
-    "電話番号0299929200の会社名は何ですか？"
-  );
-  useRegisterWebSocket(socketId);
+  const [message] = useState<string>("電話番号0299929200の会社名は何ですか？");
+  const [reply, setReply] = useState<string | null>(null);
+  const handleReplyReceived = (newReply: string) => {
+    console.log("📥 Reply received in ChatPage:", newReply);
+    setReply(newReply);
+  };
+  useRegisterWebSocket(socketId, handleReplyReceived);
+
+  useEffect(() => {
+    client.setNpcText(reply);
+    setReply(null);
+  }, [reply]);
+
+  useEffect(() => {
+    sendMessageMutation.mutate({ message: client.userText });
+  }, [client.userText]);
 
   // Mutation upload file
   const uploadMutation = useMutation<ResponseBody, AxiosError, File>({
@@ -38,7 +51,7 @@ export default function ChatPage() {
     AxiosError,
     { message: string }
   >({
-    mutationFn: uploadFile,
+    mutationFn: sendMessage,
   });
 
   // Xử lý toast khi mutation thành công/thất bại
@@ -82,6 +95,7 @@ export default function ChatPage() {
 
   const handleSendMessage = useCallback(() => {
     if (message) {
+      sendMessageMutation.mutate({ message });
     }
   }, [message]);
 

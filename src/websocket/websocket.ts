@@ -7,12 +7,16 @@ interface WebSocketMessage {
 }
 
 interface MessageResponse {
-  message: string;
+  message?: string;
   status: string;
   socket_id: string;
+  reply?: string;
 }
 
-const useRegisterWebSocket = (socketId: string) => {
+const useRegisterWebSocket = (
+  socketId: string,
+  onReplyReceived?: (reply: string) => void
+) => {
   const wsRef = useRef<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
   const [registrationSent, setRegistrationSent] = useState(false);
@@ -21,6 +25,8 @@ const useRegisterWebSocket = (socketId: string) => {
   const WS_HOST = import.meta.env.VITE_WS_HOST || "localhost";
   const WS_PORT = import.meta.env.VITE_WS_PORT || "8765";
   const WS_URL = `${WS_PROTOCOL}://${WS_HOST}:${WS_PORT}`;
+
+  console.log("🔧 WebSocket URL:", WS_URL);
 
   const sendRegistration = (ws: WebSocket) => {
     if (ws.readyState === WebSocket.OPEN) {
@@ -51,11 +57,17 @@ const useRegisterWebSocket = (socketId: string) => {
     ws.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data) as WebSocketMessage;
-        console.log("📩 Message received:", message.data);
         const response = message.data as MessageResponse;
         console.log("📩 Message response:", response);
-        toast.success(response.message);
-        localStorage.setItem("uniqueSocketId", response.socket_id);
+        if (response.message) {
+          toast.success(response.message);
+          localStorage.setItem("uniqueSocketId", response.socket_id);
+        } else if (response.reply) {
+          toast.info(response.reply);
+          if (onReplyReceived) {
+            onReplyReceived(response.reply);
+          }
+        }
       } catch (err) {
         console.log(err);
         console.error("❌ Error parsing message:", event.data);

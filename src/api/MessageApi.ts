@@ -22,6 +22,6 @@ export const sendMessage = async (data: {
     message: data.message,
     socket_id: socket_id ?? "",
   };
-  const response = await axios.post(`${BASE_URL}/query`, payload);
+  const response = await axios.post(`${BASE_URL}/convai-hook`, payload);
   return response.data;
 };
