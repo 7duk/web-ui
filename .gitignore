@@ -25,3 +25,5 @@ dist-ssr
 
 .env
 package-lock.json
+192.168.110.220+3.pem
+192.168.110.220+3-key.pem
